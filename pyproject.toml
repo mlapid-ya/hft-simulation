@@ -1,0 +1,18 @@
+[project]
+name = "de-pet-project"
+version = "0.1.0"
+description = "Algorithmic Trading Simulation"
+readme = "README.md"
+authors = [{ name = "mlapid-ya", email = "m.lapid@yandex.ru" }]
+requires-python = ">=3.13"
+dependencies = ["loguru>=0.7.3", "pydantic>=2.10.6", "websockets>=14.2"]
+
+[project.scripts]
+de-pet-project = "de_pet_project:main"
+exchange-connector = "de_pet_project.exchange_connector:main"
+processing-engine = "de_pet_project.processing_engine:main"
+
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
