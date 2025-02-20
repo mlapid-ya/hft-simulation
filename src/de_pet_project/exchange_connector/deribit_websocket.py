@@ -10,7 +10,7 @@ from websockets.asyncio.client import ClientConnection
 
 from de_pet_project.exchange_connector.utils.offset import calculate_offset
 from de_pet_project.exchange_connector.websocket_manager import WebsocketManager
-from de_pet_project.exchange_connector.message_processor import MessageProcessor
+from de_pet_project.exchange_connector.websocket_processor import WebsocketProcessor
 
 load_dotenv()
 
@@ -34,7 +34,7 @@ class DeribitWebsocket(WebsocketManager):
         }
         self.offset: float = 0
 
-        self.message_processor: MessageProcessor = MessageProcessor(stream_name=self.stream_name)
+        self.message_processor: WebsocketProcessor = WebsocketProcessor(stream_name=self.stream_name)
 
     async def __ainit__(self) -> None:
         try:

@@ -3,13 +3,14 @@ import json
 
 from loguru import logger
 
+from de_pet_project.shared_utils.message_processor import MessageProcessor
 from de_pet_project.shared_utils.grafana_connector import GrafanaConnector
 from de_pet_project.exchange_connector.utils.redis_producer import RedisProducer
 from de_pet_project.shared_utils.order_book import OrderBook
 
-class MessageProcessor:
+class WebsocketProcessor(MessageProcessor):
     def __init__(self, stream_name: str):
-        self.stream_name: str = stream_name
+        super().__init__(stream_name=stream_name)
 
         self.redis_producer: RedisProducer = RedisProducer(stream_name=self.stream_name)
         self.grafana_connector: GrafanaConnector = GrafanaConnector(stream_name=self.stream_name)
@@ -23,14 +24,8 @@ class MessageProcessor:
         except Exception as e:
             logger.error(f"Failed to initialize {self}: {e}")
             raise e
-        
-    def __str__(self) -> str:
-        return f"MessageProcessor(stream_name={self.stream_name})"
-        
-    async def close(self) -> None:
-        await self.redis_producer.close()
-        await self.grafana_connector.close()
-        logger.info(f"{self} is closed.")
+        else:
+            logger.info(f"{self} is initialized.")
 
     async def process_message(self, message: dict) -> None:
         ts_received: float = message['ts_received']
@@ -79,3 +74,8 @@ class MessageProcessor:
         
         else:
             logger.error(f"Unknown channel: {channel}")
+
+    async def close(self) -> None:
+        await self.redis_producer.close()
+        await self.grafana_connector.close()
+        logger.info(f"{self} is closed.")

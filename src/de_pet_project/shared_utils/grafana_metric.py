@@ -9,7 +9,7 @@ class GrafanaMetric(BaseModel):
     timestamp:    Annotated[int, Field(alias='timestamp')]
 
     @field_validator('timestamp', mode='before')
-    def validate_timestamp(cls, value):
+    def validate_timestamp(cls, value: float) -> int:
         return int(value * 1e9)
 
     @property
