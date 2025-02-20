@@ -16,31 +16,35 @@ class GrafanaConnector:
     def __init__(self, stream_name: str):
         self.stream_name = stream_name
 
-        self.websocket: ClientConnection = None
-        self.is_connected: bool = False
+        self._websocket: ClientConnection = None
 
     async def __ainit__(self) -> None:
+        self._websocket = await self._connect()
 
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}(stream_name={self.stream_name})"
+
+    async def _connect(self) -> ClientConnection:
+        
         headers = {
             "Authorization": f"Bearer {os.getenv('GRAFANA_API_KEY')}"
         }
 
         try:
-            self.websocket: ClientConnection = await websockets.asyncio.client.connect(
+            websocket_client: ClientConnection = await websockets.asyncio.client.connect(
                 uri=f"ws://localhost:3000/api/live/push/{self.stream_name}",
                 additional_headers=headers
             )
         except Exception as e:
             logger.error(f"Failed to connect to Grafana WebSocket: {e}")
             raise e
-        
-        logger.info(f"Connected to Grafana WebSocket")
-        self.is_connected = True
+        else:
+            logger.info(f"{self} is connected.")
+            return websocket_client
 
     async def close(self) -> None:
-        await self.websocket.close()
-        self.is_connected = False
-        logger.info(f"Connection to Grafana WebSocket closed")
+        await self._websocket.close()
+        logger.info(f"{self} is closed.")
 
     async def send(self, channel_name: str, data: dict[str, Optional[int | float]], timestamp: float) -> None:
 
@@ -51,7 +55,7 @@ class GrafanaConnector:
             timestamp=timestamp
         )
 
-        await self.websocket.send(metric.line_protocol)
+        await self._websocket.send(metric.line_protocol)
 
 
 class GrafanaMetric(BaseModel):

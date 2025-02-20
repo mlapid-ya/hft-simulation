@@ -36,6 +36,39 @@ class DeribitWebsocket(WebsocketManager):
 
         self.message_processor: MessageProcessor = MessageProcessor(stream_name=self.stream_name)
 
+    async def __ainit__(self) -> None:
+        try:
+            self.websocket: ClientConnection = await self._connect()
+            await self.message_processor.__ainit__()
+        except Exception as e:
+            logger.error(f"Failed to initialize {self}: {e}")
+            raise e
+
+        try: 
+            #await asyncio.sleep(3600)
+            async with asyncio.TaskGroup() as deribit_group:
+                deribit_group.create_task(self.subscribe())
+                deribit_group.create_task(self.receive())
+        except asyncio.CancelledError:
+            logger.info("Deribit websocket task cancelled")
+            await self.close()
+
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}(stream_name={self.stream_name})"
+
+    async def _connect(self) -> ClientConnection:
+        try:
+            websocket_client: ClientConnection = await websockets.asyncio.client.connect(
+                uri=URL
+            )
+        except Exception as e:
+            logger.error(f"Failed to connect to Deribit WebSocket: {e}")
+            raise e
+        else:
+            logger.info(f"{self} is connected")
+            self.connected = True
+            return websocket_client
+
     def print_round_trip_data(self) -> None:
 
         time_format: str = "%Y-%m-%d %H:%M:%S.%f"
@@ -50,40 +83,11 @@ class DeribitWebsocket(WebsocketManager):
             '''
         )
 
-    async def __ainit__(self) -> None:
-        logger.info("Starting")
-
-        try:
-            await self.message_processor.__ainit__()
-        except Exception as e:
-            logger.error(f"Failed to start: {e}")
-            raise e
-        
-        try:
-            self.websocket: ClientConnection = await websockets.asyncio.client.connect(
-                uri=URL
-            )
-        except Exception as e:
-            logger.error(f"Failed to connect to Deribit WebSocket: {e}")
-            raise e
-        
-        logger.info(f"Connected to Deribit WebSocket")
-        self.connected = True
-
-        try: 
-            #await asyncio.sleep(3600)
-            async with asyncio.TaskGroup() as deribit_group:
-                deribit_group.create_task(self.subscribe())
-                deribit_group.create_task(self.receive())
-        except asyncio.CancelledError:
-            logger.info("Deribit websocket task cancelled")
-            await self.close()
-
     async def close(self) -> None:
         await self.websocket.close()
         await self.message_processor.close()
         self.connected = False
-        logger.info(f"Connection to Deribit WebSocket closed")
+        logger.info(f"{self} is closed")
 
     async def subscribe(self) -> None:
 

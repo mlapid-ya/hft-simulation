@@ -1,4 +1,5 @@
 import os
+import asyncio
 from abc import ABC, abstractmethod
 
 import redis
@@ -15,7 +16,10 @@ class RedisClient(ABC):
     def __init__(self, stream_name: str):
         self.stream_name: str = stream_name
 
-        self._redis_client: redis.Redis = self._connect()
+        self._redis_client: redis.Redis = None
+
+    async def __ainit__(self) -> None:
+        self._redis_client = await self._connect()
 
     def __str__(self) -> str:
         return f"{self.__class__.__name__}(stream_name={self.stream_name})"
@@ -25,10 +29,10 @@ class RedisClient(ABC):
         return self._redis_client.xlen(self.stream_name)
     
     @abstractmethod
-    def close(self) -> None:
+    async def close(self) -> None:
         pass
 
-    def _connect(self) -> redis.Redis:
+    async def _connect(self) -> redis.Redis:
         '''
         Connect to Redis
 
@@ -40,7 +44,7 @@ class RedisClient(ABC):
         db: int = os.getenv('REDIS_DB')
 
         try:
-            redis_client: redis.Redis = redis.Redis(host=host, port=port, db=db)
+            redis_client: redis.Redis = await asyncio.to_thread(redis.Redis, host=host, port=port, db=db)
         except Exception as e:
             logger.error(f"Failed to connect to Redis: {e}")
             raise e

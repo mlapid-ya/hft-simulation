@@ -16,17 +16,19 @@ class MessageProcessor:
 
         self.ts_last_issued_order_book: float = None
 
-    async def __ainit__(self):
-        logger.info("Starting")
-
+    async def __ainit__(self) -> None:
         try:
             await self.grafana_connector.__ainit__()
+            await self.redis_producer.__ainit__()
         except Exception as e:
-            logger.error(f"Failed to start: {e}")
+            logger.error(f"Failed to initialize {self}: {e}")
             raise e
         
+    def __str__(self) -> str:
+        return f"MessageProcessor(stream_name={self.stream_name})"
+        
     async def close(self) -> None:
-        self.redis_producer.close()
+        await self.redis_producer.close()
         await self.grafana_connector.close()
         logger.info("Message processor closed")
 
@@ -51,7 +53,7 @@ class MessageProcessor:
             if self.ts_last_issued_order_book is None:
                 self.ts_last_issued_order_book = order_book.timestamp
 
-            self.redis_producer.produce_message(json.dumps(
+            redis_data = json.dumps(
                 {
                     'channel': 'exchange_connector',
                     'ts_received': ts_received,
@@ -59,7 +61,9 @@ class MessageProcessor:
                     'offset': offset,
                     'data': order_book.model_dump()
                 }
-            ).encode('utf-8'))
+            ).encode('utf-8')
+
+            await self.redis_producer.produce_message(redis_data)
 
             await self.grafana_connector.send(
                 channel_name='exchange_connector',

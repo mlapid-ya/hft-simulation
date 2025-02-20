@@ -1,4 +1,4 @@
-import redis
+import asyncio
 
 from loguru import logger
 
@@ -12,14 +12,13 @@ class RedisProducer(RedisClient):
     def __init__(self, stream_name: str):
         super().__init__(stream_name)
 
-    def produce_message(self, message: str) -> None:
-        try:
-            self._redis_client.xadd(name=self.stream_name, fields={'message': message})
-        except Exception as e:
-            logger.error(f"Failed to produce message: {e}")
-            raise e
+    async def __ainit__(self) -> None:
+        await super().__ainit__()
 
-    def close(self) -> None:
-        self._redis_client.flushall()
-        self._redis_client.close()
+    async def produce_message(self, message: str) -> None:
+        await asyncio.to_thread(self._redis_client.xadd, name=self.stream_name, fields={'message': message})
+
+    async def close(self) -> None:
+        await asyncio.to_thread(self._redis_client.flushall)
+        await asyncio.to_thread(self._redis_client.close)
         logger.info(f"{self} is closed.")
