@@ -30,7 +30,7 @@ class MessageProcessor:
     async def close(self) -> None:
         await self.redis_producer.close()
         await self.grafana_connector.close()
-        logger.info("Message processor closed")
+        logger.info(f"{self} is closed.")
 
     async def process_message(self, message: dict) -> None:
         ts_received: float = message['ts_received']

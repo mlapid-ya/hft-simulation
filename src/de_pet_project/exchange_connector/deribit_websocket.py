@@ -3,10 +3,10 @@ import time
 import asyncio
 from datetime import datetime
 
-import websockets.asyncio.client
-from websockets.asyncio.client import ClientConnection
 from loguru import logger
 from dotenv import load_dotenv
+import websockets.asyncio.client
+from websockets.asyncio.client import ClientConnection
 
 from de_pet_project.exchange_connector.utils.offset import calculate_offset
 from de_pet_project.exchange_connector.websocket_manager import WebsocketManager
@@ -43,14 +43,10 @@ class DeribitWebsocket(WebsocketManager):
         except Exception as e:
             logger.error(f"Failed to initialize {self}: {e}")
             raise e
-
-        try: 
-            async with asyncio.TaskGroup() as deribit_group:
-                deribit_group.create_task(self.subscribe())
-                deribit_group.create_task(self.receive())
-        except asyncio.CancelledError:
-            logger.info(f"{self} task is cancelled.")
-            await self.close()
+        
+        async with asyncio.TaskGroup() as deribit_group:
+            deribit_group.create_task(self.subscribe())
+            deribit_group.create_task(self.receive())
 
     def __str__(self) -> str:
         return f"{self.__class__.__name__}(stream_name={self.stream_name})"
