@@ -45,12 +45,11 @@ class DeribitWebsocket(WebsocketManager):
             raise e
 
         try: 
-            #await asyncio.sleep(3600)
             async with asyncio.TaskGroup() as deribit_group:
                 deribit_group.create_task(self.subscribe())
                 deribit_group.create_task(self.receive())
         except asyncio.CancelledError:
-            logger.info("Deribit websocket task cancelled")
+            logger.info(f"{self} task is cancelled.")
             await self.close()
 
     def __str__(self) -> str:

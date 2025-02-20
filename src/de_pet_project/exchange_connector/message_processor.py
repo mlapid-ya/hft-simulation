@@ -70,7 +70,7 @@ class MessageProcessor:
                 data = {
                     'delta_message_issued': order_book.timestamp - self.ts_last_issued_order_book,
                     'latency': (ts_received + offset) - order_book.timestamp,
-                    'queue_size': self.redis_producer.stream_length
+                    'queue_size': await self.redis_producer.stream_length()
                 },
                 timestamp=ts_received
             )

@@ -1,8 +1,7 @@
 import os
-import asyncio
 from abc import ABC, abstractmethod
 
-import redis
+import redis.asyncio as redis
 from loguru import logger
 from dotenv import load_dotenv
 
@@ -17,6 +16,7 @@ class RedisClient(ABC):
         self.stream_name: str = stream_name
 
         self._redis_client: redis.Redis = None
+        self.is_connected: bool = False
 
     async def __ainit__(self) -> None:
         self._redis_client = await self._connect()
@@ -24,9 +24,8 @@ class RedisClient(ABC):
     def __str__(self) -> str:
         return f"{self.__class__.__name__}(stream_name={self.stream_name})"
 
-    @property
-    def stream_length(self) -> int:
-        return self._redis_client.xlen(self.stream_name)
+    async def stream_length(self) -> int:
+        return await self._redis_client.xlen(self.stream_name)
     
     @abstractmethod
     async def close(self) -> None:
@@ -44,10 +43,11 @@ class RedisClient(ABC):
         db: int = os.getenv('REDIS_DB')
 
         try:
-            redis_client: redis.Redis = await asyncio.to_thread(redis.Redis, host=host, port=port, db=db)
+            redis_client: redis.Redis = await redis.from_url(f"redis://{host}:{port}/{db}")
         except Exception as e:
             logger.error(f"Failed to connect to Redis: {e}")
             raise e
         else:
             logger.info(f"{self} is connected.")
+            self.is_connected = True
             return redis_client

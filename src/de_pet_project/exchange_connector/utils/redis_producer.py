@@ -1,5 +1,3 @@
-import asyncio
-
 from loguru import logger
 
 from de_pet_project.shared_utils.redis_client import RedisClient
@@ -16,9 +14,9 @@ class RedisProducer(RedisClient):
         await super().__ainit__()
 
     async def produce_message(self, message: str) -> None:
-        await asyncio.to_thread(self._redis_client.xadd, name=self.stream_name, fields={'message': message})
+        await self._redis_client.xadd(name=self.stream_name, fields={'message': message})
 
     async def close(self) -> None:
-        await asyncio.to_thread(self._redis_client.flushall)
-        await asyncio.to_thread(self._redis_client.close)
+        await self._redis_client.flushall(asynchronous=True)
+        await self._redis_client.aclose()
         logger.info(f"{self} is closed.")
