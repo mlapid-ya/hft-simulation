@@ -48,15 +48,13 @@ class WebsocketProcessor(MessageProcessor):
             if self.ts_last_issued_order_book is None:
                 self.ts_last_issued_order_book = order_book.timestamp
 
-            redis_data = json.dumps(
-                {
-                    'channel': 'exchange_connector',
-                    'ts_received': ts_received,
-                    'ts_sent': time.time(),
-                    'offset': offset,
-                    'data': order_book.model_dump()
-                }
-            ).encode('utf-8')
+            redis_data = {
+                'channel': 'exchange_connector',
+                'ts_received': ts_received,
+                'ts_sent': time.time(),
+                'offset': offset,
+                'data': order_book.model_dump()
+            }
 
             await self.redis_producer.produce_message(redis_data)
 

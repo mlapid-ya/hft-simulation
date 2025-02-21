@@ -2,11 +2,10 @@ import time
 import json
 import asyncio
 from loguru import logger
-import redis.asyncio as redis
 
-from de_pet_project.shared_utils.order_book import OrderBook
 from de_pet_project.shared_utils.redis_client import RedisClient
-from de_pet_project.processing_engine.stream_processor import StreamProcessor
+from de_pet_project.processing_engine.utils.stream_processor import StreamProcessor
+
 class RedisConsumer(RedisClient):
 
     def __init__(self, stream_name: str, group_name: str, consumer_name: str):
@@ -54,13 +53,13 @@ class RedisConsumer(RedisClient):
                 for stream, message_list in messages:
                     for message_id, message_data in message_list:
                         message_id: str = message_id.decode('utf-8')
-                        data: str = message_data[b'message'].decode('utf-8')
-                        data: dict = json.loads(data)
+                        message: str = message_data[b'message'].decode('utf-8')
+                        message: dict = json.loads(message)
 
                         await self._redis_client.xack(self.stream_name, self.group_name, message_id)
                         await self._redis_client.xdel(self.stream_name, message_id)
 
-                        await self.message_processor.process_message(data)
+                        await self.message_processor.process_message(message)
             else:
                 logger.info("No new messages. Waiting for more...")
                 await asyncio.sleep(5)

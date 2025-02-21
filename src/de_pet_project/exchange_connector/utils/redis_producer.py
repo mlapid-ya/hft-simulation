@@ -1,3 +1,5 @@
+import json
+
 from loguru import logger
 
 from de_pet_project.shared_utils.redis_client import RedisClient
@@ -13,7 +15,19 @@ class RedisProducer(RedisClient):
     async def __ainit__(self) -> None:
         await super().__ainit__()
 
-    async def produce_message(self, message: str) -> None:
+    async def produce_message(self, message: dict) -> None:
+        '''
+        message: dict = {
+            'channel': str,
+            'ts_received': float,
+            'ts_sent': float,
+            'offset': float,
+            'data': dict
+        }
+        '''
+
+        message: str = json.dumps(message).encode('utf-8')
+
         await self._redis_client.xadd(name=self.stream_name, fields={'message': message})
 
     async def close(self) -> None:
