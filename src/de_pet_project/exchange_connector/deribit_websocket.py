@@ -47,6 +47,7 @@ class DeribitWebsocket(WebsocketManager):
         async with asyncio.TaskGroup() as deribit_group:
             deribit_group.create_task(self.subscribe())
             deribit_group.create_task(self.receive())
+            deribit_group.create_task(self.ping())
 
     def __str__(self) -> str:
         return f"{self.__class__.__name__}(stream_name={self.stream_name})"
@@ -102,29 +103,41 @@ class DeribitWebsocket(WebsocketManager):
         await self.send(msg)
         logger.info(f"Subscribed to channel(s): {channels}")
 
+    async def ping(self) -> None:
+        
+        msg = {
+        "jsonrpc" : "2.0",
+        "id" : 9098,
+        "method" : "public/set_heartbeat",
+            "params" : {
+                "interval" : 10
+            }
+        }
+
+        await self.send(msg)
+
     async def send(self, message: dict) -> None:
         if self.connected:
-            self.round_trip_data['client_send'] = time.time()
             await self.websocket.send(json.dumps(message))
-            logger.info(f"Sent {message} to Deribit WebSocket")
+            self.round_trip_data['client_send'] = time.time()
+            logger.info(f"Sent {message} to {self}")
         else:
-            logger.error(f"Not connected to Deribit WebSocket")
+            logger.error(f"Not connected to {self}")
     
     async def receive(self) -> None:
         while self.connected:
             try:
                 response: str = await self.websocket.recv()
                 ts_received: float = time.time()
+                # logger.info(f"Received message: {response}")
 
                 message: dict = json.loads(response)
 
                 if 'id' in message:
-
-                    logger.info(f"Received initial message: {message}")
-
-                    self.round_trip_data['client_recv'] = ts_received + self.offset
                     self.round_trip_data['server_recv'] = message['usIn'] / 1e6
                     self.round_trip_data['server_send'] = message['usOut'] / 1e6
+                    self.round_trip_data['client_recv'] = ts_received
+
                     self.offset = calculate_offset(
                         self.round_trip_data['client_send'],
                         self.round_trip_data['server_recv'],
@@ -132,22 +145,24 @@ class DeribitWebsocket(WebsocketManager):
                         self.round_trip_data['client_recv']
                     )
 
-                    self.print_round_trip_data()
+                    logger.info(f"Offset: {self.offset}")
 
-                    logger.info(f"Offset set to: {self.offset}")
-                    # TODO: Recalculate offset periodically
-                    continue
+                if 'method' in message:
+                    if message['method'] == "heartbeat":
+                        await self.ping()
+                    elif message['method'] == "subscription":
+                        logger.info(f"Received message: {message}")
 
-                if 'params' in message:
-                    # logger.info(f"Received message: {message}")
-                    await self.message_processor.process_message(
-                        {
-                            'ts_received': ts_received,
-                            'offset': self.offset,
-                            'channel': message['params']['channel'],
-                            'data': message['params']['data'],
-                        }
-                    )
+                        await self.message_processor.process_message(
+                            {
+                                'ts_received': ts_received,
+                                'offset': self.offset,
+                                'channel': message['params']['channel'],
+                                'data': message['params']['data'],
+                            }
+                        )
+                    else:
+                        logger.error(f"Received unknown message: {message}")
 
             except websockets.ConnectionClosed as e:
                 logger.error(f"Connection closed: {e}")
