@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 import websockets.asyncio.client
 from websockets.asyncio.client import ClientConnection
 
-from de_pet_project.shared_utils.grafana_metric import GrafanaMetric
+from hft_simulation.shared_utils.grafana_metric import GrafanaMetric
 
 load_dotenv()
 

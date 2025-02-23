@@ -1,6 +1,6 @@
 import pytest
 
-from de_pet_project.shared_utils.order_book import OrderBook, Level
+from hft_simulation.shared_utils.order_book import OrderBook, Level
 
 class TestOrderBook:
 

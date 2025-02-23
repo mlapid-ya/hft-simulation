@@ -8,9 +8,9 @@ from dotenv import load_dotenv
 import websockets.asyncio.client
 from websockets.asyncio.client import ClientConnection
 
-from de_pet_project.exchange_connector.utils.offset import calculate_offset
-from de_pet_project.exchange_connector.websocket_manager import WebsocketManager
-from de_pet_project.exchange_connector.websocket_processor import WebsocketProcessor
+from hft_simulation.exchange_connector.utils.offset import calculate_offset
+from hft_simulation.exchange_connector.websocket_manager import WebsocketManager
+from hft_simulation.exchange_connector.websocket_processor import WebsocketProcessor
 
 load_dotenv()
 

@@ -1,7 +1,7 @@
 [project]
-name = "de-pet-project"
+name = "hft-simulation"
 version = "0.1.0"
-description = "Algorithmic Trading Simulation"
+description = "HFT Simulation"
 readme = "README.md"
 authors = [{ name = "mlapid-ya", email = "m.lapid@yandex.ru" }]
 requires-python = ">=3.13"
@@ -14,9 +14,9 @@ dependencies = [
 ]
 
 [project.scripts]
-de-pet-project = "de_pet_project:main"
-exchange-connector = "de_pet_project.exchange_connector:main"
-processing-engine = "de_pet_project.processing_engine:main"
+hft-simulation = "hft_simulation:main"
+exchange-connector = "hft_simulation.exchange_connector:main"
+processing-engine = "hft_simulation.processing_engine:main"
 
 
 [build-system]
@@ -24,7 +24,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [dependency-groups]
-dev = ["pytest>=8.3.4", "pytest-asyncio>=0.25.3"]
+dev = ["aiosqlite>=0.21.0", "pytest>=8.3.4", "pytest-asyncio>=0.25.3"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

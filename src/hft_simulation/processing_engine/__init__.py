@@ -18,8 +18,9 @@ async def run():
     await redis_consumer.__ainit__()
 
     try:
-        async with asyncio.TaskGroup() as deribit_consumer:
-            deribit_consumer.create_task(redis_consumer.consume_messages())
+        await redis_consumer.consume_messages()
+        # async with asyncio.TaskGroup() as deribit_consumer:
+        #     deribit_consumer.create_task(redis_consumer.consume_messages())
     except asyncio.CancelledError:
         logger.info("Closing the consumer.")
         await redis_consumer.close()

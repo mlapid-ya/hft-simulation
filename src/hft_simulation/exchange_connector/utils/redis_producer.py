@@ -2,7 +2,7 @@ import json
 
 from loguru import logger
 
-from de_pet_project.shared_utils.redis_client import RedisClient
+from hft_simulation.shared_utils.redis_client import RedisClient
 
 class RedisProducer(RedisClient):
     '''

@@ -1,12 +1,11 @@
 import time
-import json
 
 from loguru import logger
 
-from de_pet_project.shared_utils.message_processor import MessageProcessor
-from de_pet_project.shared_utils.grafana_connector import GrafanaConnector
-from de_pet_project.exchange_connector.utils.redis_producer import RedisProducer
-from de_pet_project.shared_utils.order_book import OrderBook
+from hft_simulation.shared_utils.message_processor import MessageProcessor
+from hft_simulation.shared_utils.grafana_connector import GrafanaConnector
+from hft_simulation.exchange_connector.utils.redis_producer import RedisProducer
+from hft_simulation.shared_utils.order_book import OrderBook
 
 class WebsocketProcessor(MessageProcessor):
     def __init__(self, stream_name: str):
@@ -49,7 +48,7 @@ class WebsocketProcessor(MessageProcessor):
                 self.ts_last_issued_order_book = order_book.timestamp
 
             redis_data = {
-                'channel': 'exchange_connector',
+                'channel': channel,
                 'ts_received': ts_received,
                 'ts_sent': time.time(),
                 'offset': offset,

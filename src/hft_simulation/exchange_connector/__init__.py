@@ -2,7 +2,7 @@ import asyncio
 
 from loguru import logger
 
-from de_pet_project.exchange_connector.deribit_websocket import DeribitWebsocket
+from hft_simulation.exchange_connector.deribit_websocket import DeribitWebsocket
 
 async def run():
 
