@@ -21,7 +21,7 @@ Visualization of events takes place in Grafana.
 
 # Roadmap
 
-- [x] Websocket Connector
+- [x] Exchange Connector
 - [ ] Processing Engine
 - [ ] Portfolio Manager
   - [ ] Backtesting
