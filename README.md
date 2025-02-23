@@ -1,23 +1,23 @@
-# Пет-проект по симуляции алгоритмической торговли в реальном времени
+# Pet Project On HFT Simulation
 
-В проекте реализована симуляция алгоритмической торговли (без реальной торговли) на данных в реальном времени.
+The project implements a simulation of algorithmic trading (without actual trading) on real-time data.
 
-Проект включает в себя:
-- получение данных по websocket'у биржи,
-- анализ данных в Spark и генерации торгового сигнала,
-- построение хранилища в Clickhouse для хранения данных,
-- [бэктестинг](https://en.wikipedia.org/wiki/Backtesting) торгового сигнала на исторических данных,
-- визуализацию логов и, непостредственно, симуляции результатов торговли в Grafana.
+The project includes:
+- receiving data via the exchange's WebSocket,
+- data analysis in PySpark and generating a trading signal,
+- building a MongoDB storage for data retention,
+- [backtesting](https://en.wikipedia.org/wiki/Backtesting) the trading signal on historical data,
+- visualization of logs and the trading simulation results in Grafana.
 
-# Описание
+# About The Project
 
-Данный проект использует открытые данные [Deribit websocket](https://docs.deribit.com/?python#json-rpc-over-websocket) как источник.
+This project uses open data from the [Deribit websocket](https://docs.deribit.com/?python#json-rpc-over-websocket) as a source.
 
-В частности, для анализа используются данные по [Limit Order Book](https://en.wikipedia.org/wiki/Central_limit_order_book) - [ссылка на API](https://docs.deribit.com/?python#public-get_order_book_by_instrument_id).
+In particular, data on [Limit Order Book](https://en.wikipedia.org/wiki/Central_limit_order_book) is used - [API link](https://docs.deribit.com/?python#public-get_order_book_by_instrument_id).
 
-Для общения между сервисами используется Redis Streams.
+Redis Streams are used for communication between services.
 
-Визуализация эвентов происходит в Grafana.
+Visualization of events takes place in Grafana.
 
 # Roadmap
 
@@ -27,20 +27,18 @@
   - [ ] Backtesting
   - [ ] P/L Calculation
      
-# Инстументарий
+# Built With
 
 * [![Python][Python]][Python-url]
 * [![Redis][Redis]][Redis-url]
-* [![Clickhouse][Clickhouse]][Clickhouse-url]
+* [![MongoDB][MongoDB]][MongoDB-url]
 * [![Grafana][Grafana]][Grafana-url]
 
-<!-- MARKDOWN LINKS & IMAGES -->
-<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 [Python]: https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=fff
 [Python-url]: https://www.python.org/
 [Redis]: https://img.shields.io/badge/Redis-%23DD0031.svg?logo=redis&logoColor=white
 [Redis-url]: https://redis.io/
-[Clickhouse]: https://img.shields.io/badge/ClickHouse-FFCC01?logo=clickhouse&logoColor=000
-[Clickhouse-url]: https://clickhouse.com/
+[MongoDB]: https://img.shields.io/badge/MongoDB-%234ea94b.svg?logo=mongodb&logoColor=white
+[MongoDB-url]: https://www.mongodb.com/
 [Grafana]: https://img.shields.io/badge/Grafana-F46800?logo=grafana&logoColor=fff
 [Grafana-url]: https://grafana.com/
