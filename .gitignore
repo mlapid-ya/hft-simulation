@@ -13,3 +13,4 @@ notebooks/
 dist/
 .ipynb_checkpoints/
 .drawio
+data/
