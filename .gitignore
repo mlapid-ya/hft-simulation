@@ -12,3 +12,4 @@ __pycache__
 notebooks/
 dist/
 .ipynb_checkpoints/
+.drawio
