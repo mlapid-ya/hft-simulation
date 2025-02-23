@@ -9,7 +9,7 @@ The project includes:
 - [backtesting](https://en.wikipedia.org/wiki/Backtesting) the trading signal on historical data,
 - visualization of logs and the trading simulation results in Grafana.
 
-![Architecture](images/Architecture.svg)
+![Architecture](docs/Architecture.svg)
 
 # About The Project
 
