@@ -9,7 +9,6 @@ __pycache__
 
 .pytest_cache/
 
-notebooks/
 dist/
 .ipynb_checkpoints/
 .drawio
