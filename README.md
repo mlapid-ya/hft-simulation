@@ -9,6 +9,8 @@ The project includes:
 - [backtesting](https://en.wikipedia.org/wiki/Backtesting) the trading signal on historical data,
 - visualization of logs and the trading simulation results in Grafana.
 
+![Architecture](images/Architecture.svg)
+
 # About The Project
 
 This project uses open data from the [Deribit websocket](https://docs.deribit.com/?python#json-rpc-over-websocket) as a source.
