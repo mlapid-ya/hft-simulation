@@ -1,3 +1,4 @@
+import sys
 import time
 import json
 import asyncio
@@ -15,6 +16,8 @@ class RedisConsumer(RedisClient):
         self.consumer_name: str = consumer_name
 
         self.message_processor: StreamProcessor = StreamProcessor(stream_name=self.stream_name)
+
+        self.counter: int = 0
 
     def __str__(self) -> str:
         return f"{self.__class__.__name__}(stream_name={self.stream_name}, group_name={self.group_name}, consumer_name={self.consumer_name})"
@@ -44,11 +47,12 @@ class RedisConsumer(RedisClient):
                 consumername=self.consumer_name,
                 streams={self.stream_name: '>'},
                 count=1,
-                block=100
+                block=0
             )
 
             if messages:
                 ts_received: float = time.time()
+                self.counter += 1
 
                 for stream, message_list in messages:
                     for message_id, message_data in message_list:
@@ -60,6 +64,9 @@ class RedisConsumer(RedisClient):
                         await self._redis_client.xdel(self.stream_name, message_id)
 
                         await self.message_processor.process_message(message)
+
+                        # if self.counter % 100000 == 0:
+                        #     raise asyncio.CancelledError("Shutdown initiated")
             else:
                 logger.info("No new messages. Waiting for more...")
                 await asyncio.sleep(5)
