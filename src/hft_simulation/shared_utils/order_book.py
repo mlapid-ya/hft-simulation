@@ -46,36 +46,52 @@ class OrderBook(BaseModel):
             if v[i].price > v[i + 1].price:
                 logger.error(f"Asks are not sorted: {v[i].price} > {v[i + 1].price}")
         return v
-
-    @property
-    def midprice(self) -> float:
-        return (self.bids[0].price + self.asks[0].price) / 2
     
     @property
-    def microprice(self) -> float:
-        return ( (self.asks[0].price * self.bids[0].volume) + (self.bids[0].price * self.asks[0].volume) ) / (self.bids[0].volume + self.asks[0].volume)
+    def bid_price(self) -> float:
+        return self.bids[0].price
+    
+    @property
+    def bid_volume(self) -> float:
+        return self.bids[0].volume
+    
+    @property
+    def ask_price(self) -> float:
+        return self.asks[0].price
+    
+    @property
+    def ask_volume(self) -> float:
+        return self.asks[0].volume
+
+    @property
+    def mid_price(self) -> float:
+        return (self.bid_price + self.ask_price) / 2
+    
+    @property
+    def micro_price(self) -> float:
+        return ( (self.ask_price * self.bid_volume) + (self.bid_price * self.ask_volume) ) / (self.bid_volume + self.ask_volume)
     
     @property
     def spread(self) -> float:
-        return self.asks[0].price - self.bids[0].price
+        return self.ask_price - self.bid_price
     
     @property
-    def total_bid_volume(self) -> float:
-        return sum(volume for price, volume in self.bids)
+    def bid_volume_total(self) -> float:
+        return sum(level.volume for level in self.bids)
     
     @property
-    def total_ask_volume(self) -> float:
-        return sum(volume for price, volume in self.asks)
+    def ask_volume_total(self) -> float:
+        return sum(level.volume for level in self.asks)
     
     @property
-    def total_volume_imbalance(self) -> float:
-        return (self.total_bid_volume - self.total_ask_volume) / (self.total_bid_volume + self.total_ask_volume)
+    def volume_imbalance_total(self) -> float:
+        return (self.bid_volume_total - self.ask_volume_total) / (self.bid_volume_total + self.ask_volume_total)
 
     def get_volume_imbalance(self, lvl: int) -> float:
         if not (1 <= lvl <= self.depth):
             # logger.error(f"Level must be between 1 and {self.depth}, got {lvl}")
             raise ValueError(f"Level must be between 1 and {self.depth}, got {lvl}")
         
-        bid_volume: float = self.bids[lvl - 1][1]
-        ask_volume: float = self.asks[lvl - 1][1]
+        bid_volume: float = self.bids[lvl - 1].volume
+        ask_volume: float = self.asks[lvl - 1].volume
         return (bid_volume - ask_volume) / (bid_volume + ask_volume)

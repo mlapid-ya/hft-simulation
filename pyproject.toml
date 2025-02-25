@@ -17,6 +17,7 @@ dependencies = [
 hft-simulation = "hft_simulation:main"
 exchange-connector = "hft_simulation.exchange_connector:main"
 processing-engine = "hft_simulation.processing_engine:main"
+execution-engine = "hft_simulation.execution_engine:main"
 
 
 [build-system]

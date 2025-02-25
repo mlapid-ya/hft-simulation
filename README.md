@@ -6,7 +6,7 @@ The project includes:
 - receiving data via the exchange's WebSocket,
 - data analysis in PySpark and generating a trading signal,
 - building a MongoDB storage for data retention,
-- [backtesting](https://en.wikipedia.org/wiki/Backtesting) the trading signal on historical data,
+- [trading simulation](https://www.investopedia.com/terms/p/papertrade.asp) on real-time data,
 - visualization of logs and the trading simulation results in Grafana.
 
 ![Architecture](docs/Architecture.svg)
@@ -25,8 +25,8 @@ Visualization of events takes place in Grafana.
 
 - [x] Exchange Connector
 - [ ] Processing Engine
-- [ ] Portfolio Manager
-  - [ ] Backtesting
+- [ ] Execution Engine
+  - [ ] Trading Simulator
   - [ ] P/L Calculation
      
 # Built With
