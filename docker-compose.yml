@@ -13,15 +13,17 @@ services:
     ports:
       - 6379:6379
     restart: unless-stopped
-  metabase:
-    image: metabase/metabase:latest
-    container_name: metabase
+  mongo:
+    image: mongo:latest
     ports:
-      - 3333:3000
+      - 27017:27017
     restart: unless-stopped
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER:-default_user}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD:-default_password}
     volumes:
-      - metabase-storage:/metabase-data
+      - mongo-storage:/data/db
 
 volumes:
   grafana-storage:
-  metabase-storage:
+  mongo-storage:
