@@ -1,4 +1,5 @@
 import time
+from datetime import datetime
 
 from loguru import logger
 
@@ -7,7 +8,7 @@ from hft_simulation.shared_utils.grafana_connector import GrafanaConnector
 from hft_simulation.exchange_connector.utils.redis_producer import RedisProducer
 from hft_simulation.shared_utils.order_book import OrderBook
 
-class WebsocketProcessor(MessageProcessor):
+class DeribitProcessor(MessageProcessor):
     def __init__(self, stream_name: str):
         super().__init__(stream_name=stream_name)
 
@@ -18,7 +19,7 @@ class WebsocketProcessor(MessageProcessor):
 
     async def __ainit__(self) -> None:
         try:
-            await self.grafana_connector.__ainit__()
+            await self.grafana_connector.connect()
             await self.redis_producer.__ainit__()
         except Exception as e:
             logger.error(f"Failed to initialize {self}: {e}")
@@ -33,11 +34,17 @@ class WebsocketProcessor(MessageProcessor):
         data: dict = message['data']
 
         if 'book' in channel:
+            channel = 'order_book'
 
             data['timestamp'] = data['timestamp'] / 1e3
 
             try:
-                order_book: OrderBook = OrderBook(**data)
+                order_book: OrderBook = OrderBook(
+                    timestamp=data['timestamp'],
+                    instrument_name=data['instrument_name'],
+                    bids=data['bids'],
+                    asks=data['asks']
+                )
             except Exception as e:
                 logger.error(f"Error processing order book: {e}")
                 return
@@ -52,7 +59,7 @@ class WebsocketProcessor(MessageProcessor):
                 'ts_received': ts_received,
                 'ts_sent': time.time(),
                 'offset': offset,
-                'data': order_book.model_dump()
+                'data': order_book.model_dump(mode='json')
             }
 
             await self.redis_producer.produce_message(redis_data)
@@ -60,8 +67,8 @@ class WebsocketProcessor(MessageProcessor):
             await self.grafana_connector.send(
                 channel_name='exchange_connector',
                 data = {
-                    'delta_message_issued': order_book.timestamp - self.ts_last_issued_order_book,
-                    'latency': (ts_received + offset) - order_book.timestamp,
+                    'delta_message_issued': (order_book.timestamp - self.ts_last_issued_order_book).total_seconds(),
+                    'latency': (datetime.fromtimestamp(ts_received + offset) - order_book.timestamp).total_seconds(),
                     'queue_size': await self.redis_producer.stream_length()
                 },
                 timestamp=ts_received

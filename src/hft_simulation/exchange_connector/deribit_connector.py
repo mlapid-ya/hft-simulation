@@ -4,20 +4,17 @@ import asyncio
 from datetime import datetime
 
 from loguru import logger
-from dotenv import load_dotenv
 import websockets.asyncio.client
 from websockets.asyncio.client import ClientConnection
 
 from hft_simulation.exchange_connector.utils.offset import calculate_offset
-from hft_simulation.exchange_connector.websocket_manager import WebsocketManager
-from hft_simulation.exchange_connector.websocket_processor import WebsocketProcessor
+from hft_simulation.exchange_connector.utils.websocket_manager import WebsocketManager
+from hft_simulation.exchange_connector.deribit_processor import DeribitProcessor
 
-load_dotenv()
+class DeribitConnector(WebsocketManager):
 
-#URL: str = "wss://test.deribit.com/ws/api/v2"
-URL: str = "wss://www.deribit.com/ws/api/v2"
-
-class DeribitWebsocket(WebsocketManager):
+    URI: str = "wss://www.deribit.com/ws/api/v2"
+    URI_TEST: str = "wss://test.deribit.com/ws/api/v2"
 
     stream_name: str = 'deribit_connector'
 
@@ -34,12 +31,12 @@ class DeribitWebsocket(WebsocketManager):
         }
         self.offset: float = 0
 
-        self.message_processor: WebsocketProcessor = WebsocketProcessor(stream_name=self.stream_name)
+        self.deribit_processor: DeribitProcessor = DeribitProcessor(stream_name=self.stream_name)
 
     async def __ainit__(self) -> None:
         try:
-            self.websocket: ClientConnection = await self._connect()
-            await self.message_processor.__ainit__()
+            self.websocket: ClientConnection = await self.connect()
+            await self.deribit_processor.__ainit__()
         except Exception as e:
             logger.error(f"Failed to initialize {self}: {e}")
             raise e
@@ -52,10 +49,10 @@ class DeribitWebsocket(WebsocketManager):
     def __str__(self) -> str:
         return f"{self.__class__.__name__}(stream_name={self.stream_name})"
 
-    async def _connect(self) -> ClientConnection:
+    async def connect(self) -> ClientConnection:
         try:
             websocket_client: ClientConnection = await websockets.asyncio.client.connect(
-                uri=URL
+                uri=self.URI
             )
         except Exception as e:
             logger.error(f"Failed to connect to Deribit WebSocket: {e}")
@@ -81,7 +78,7 @@ class DeribitWebsocket(WebsocketManager):
 
     async def close(self) -> None:
         await self.websocket.close()
-        await self.message_processor.close()
+        await self.deribit_processor.close()
         self.connected = False
         logger.info(f"{self} is closed")
 
@@ -153,7 +150,7 @@ class DeribitWebsocket(WebsocketManager):
                     elif message['method'] == "subscription":
                         logger.info(f"Received message: {message}")
 
-                        await self.message_processor.process_message(
+                        await self.deribit_processor.process_message(
                             {
                                 'ts_received': ts_received,
                                 'offset': self.offset,

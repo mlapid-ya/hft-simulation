@@ -13,7 +13,7 @@ class MessageProcessor(ABC):
         pass
     
     @abstractmethod
-    async def process_message(self, message: dict) -> None:
+    async def process_message(self, message: dict) -> bool:
         pass
 
     @abstractmethod
